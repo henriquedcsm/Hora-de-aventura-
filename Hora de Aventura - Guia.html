@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Hora de Aventura</title>
+    <style>
+        :root {
+            --azul-ceu: #87CEEB;
+            --amarelo-jake: #FFD700;
+            --verde-grama: #7CFC00;
+            --branco: #FFFFFF;
+            --cinza-fundo: #F0F8FF;
+            --texto: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--azul-ceu);
+            color: var(--texto);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header img {
+            width: 200px;
+            max-width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: var(--branco);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin: 5px 0;
+        }
+
+        .header p {
+            color: var(--branco);
+            font-weight: bold;
+        }
+
+        .progresso-container {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #0056b3;
+        }
+
+        .temporada {
+            background-color: var(--amarelo-jake);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .temporada-header {
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .episodios-lista {
+            display: none;
+            background-color: var(--branco);
+            padding: 15px;
+            text-align: left;
+        }
+
+        .episodio-card {
+            background-color: var(--cinza-fundo);
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .episodio-titulo {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-custom {
+            width: 25px;
+            height: 25px;
+            margin-right: 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .controles {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .rating-bmo {
+            display: flex;
+            gap: 5px;
+        }
+
+        .bmo-icon {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+            content: url('https://static.wikia.nocookie.net/adventuretimewithfinnandjake/images/8/81/BMO.png/revision/latest/scale-to-width/360?cb=20200613123757');
+        }
+
+        .bmo-icon.ativo {
+            opacity: 1;
+        }
+
+        .fav-marceline {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            filter: grayscale(100%);
+            transition: filter 0.2s, transform 0.2s;
+            content: url('https://multiversus.wiki.gg/images/thumb/Marceline_Illustrated.png/600px-Marceline_Illustrated.png?7a960b');
+        }
+
+        .fav-marceline.ativo {
+            filter: grayscale(0%);
+            transform: scale(1.1);
+        }
+
+        .anotacoes {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="https://upload.wikimedia.org/wikipedia/pt/6/6f/Adventure_Time_logo.png?utm_source=pt.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20140705005135" alt="Adventure Time Logo">
+        <h1>Guia Definitivo</h1>
+        <p>Acompanhe sua jornada na Terra de Ooo!</p>
+        <div class="progresso-container">
+            Progresso Geral: <span id="progresso-texto">0%</span>
+        </div>
+    </div>
+
+    <div id="app-content"></div>
+
+    <script>
+        const guias = [
+            {
+                temporada: "TEMPORADA 1",
+                episodios: ["5 - Enquiridio", "7 - Ricardio", "12 - Despejados", "16 - Oceano dos Medos", "20 - Cidade das Aberrações", "25 - O Herói Dele"]
+            },
+            {
+                temporada: "TEMPORADA 2",
+                episodios: ["1 - Veio da Noitosfera", "7 - Incansável", "16 - Guardiões do Brilho do Sol", "17 - Morte em Botão", "18 - Susana Forte", "20 - Vem Comigo", "24 - Folia Mortal", "25 - Recuo Mortal"]
+            },
+            {
+                temporada: "TEMPORADA 3",
+                episodios: ["3 - Memória de Uma Memória", "5 - Jovem Demais", "8 - Batalha dos Magos", "9 - Fionna e Cake", "10 - O Que Faltava", "12 - Sustos", "14 - Bonitopia", "15 - Ninguém te Ouvindo", "16 - Jake VS Me-Mow", "17 - Obrigado", "19/20 - Segredos em Natal", "21 - O Armário de Marceline", "23 - Outro Jeito", "24 - Princesa Fantasma", "25 - A Masmorra do Papai", "26 - Incêndio"]
+            },
+            {
+                temporada: "TEMPORADA 4",
+                episodios: ["1 - Quente Demais", "2 - Cinco historinhas", "5 - Retorno a Noitosfera", "6 - A Monstrinha do Papai", "7 - Seguindo seus Passos", "9 - Esposa Princesa Monstro", "10 - Goliad", "12 - Te Peguei", "13 - Princesa Biscoito", "14 - Guerra das Cartas", "15 - Filhos de Marte", "16 - Pegando um Foguinho", "18 - Rei Minhoca", "19 - Lady & Jujuba", "20 - Você me fez", "21 - Quem Ganha?", "22 - Ponto de Ignição", "24 - Reino de Gunters", "25 - Me Lembro de Você", "26 - O Lich"]
+            },
+            {
+                temporada: "TEMPORADA 5",
+                episodios: ["1 - Finn, o Humano", "2 - Jake, o Cão", "3 - Mais Cinco Historinhas", "5 - Todos os Baixinhos", "6 - Jake, o Pai", "8 - Masmorra do Mistério", "9 - A Culpa é Toda Sua", "12 - Caverna de Ossos", "14 - Simon & Marcy", "15 - Erro é Erro", "16 - Puhoy", "19 - James Baxter", "20 - Silencio", "21 - O Pretendente", "22 - Acabou a Festa, Isla de Señorita", "23 - Um Último Serviço", "24 - Mais Outras Cinco Historinhas", "26 - Só Magos, Tolos", "28 - Ser Mais", "29 - Bruxa do Céu", "30 - Frio e Fogo", "31 - Velha Demais", "32 - Terra e Água", "33 - Sanduíche do Tempo", "34 - O Cofre", "36 - O Trem Masmorra", "38 - Fome de Vermelho", "39 - Consertamos um Caminhão", "40 - Encontro para Brincar", "41 - O Poço", "42 - James", "43 - O Refri", "44 - Casamento de Maça", "45 - Espada de Grama", "46 - Chicletão", "47 - O Trono Vermelho", "48 - Betty", "49 - Péssima Hora", "50/51 - Limãohope", "52 - Lista do que Fazer Antes de Morrer do Billy"]
+            },
+            {
+                temporada: "TEMPORADA 6",
+                episodios: ["1 - Acorda", "2 - Fuga da Cidadela", "4 - A Torre", "5 - Cara Triste", "6 - Breezinha", "7 - Cadeia Alimentar", "10 - Alguma Coisa Grande", "11 - Irmãozinho", "12 - Ocarina", "13 - Obrigado pelas Maçãs, Giuseppe", "14 - O Dia das Princesas", "15 - Nêmesis", "16 - Joshua e Margaret", "17 - Mosca Fantasma", "18 - Tudo é Jake", "19 - É você?", "20 - Jake, o Tijolo", "21 - Dentista", "22 - O Resfriador", "23 - A Guerra do Pijama", "24 - Evergreen", "25 - Plano Astral", "26 - Estrelas de Ouro", "27 - O Visitante", "28 - A Montanha", "29 - Roxo Escuro", "30 - O Diário", "31 - Nozes e Chuva", "33 - Jermaine", "35 - Historinhas", "36 - Amor Cósmico", "38 - Você esqueceu as Boias", "39 - Docinho", "40 - Orgalorg", "41 - Em Fuga", "42 - Grande Destruição", "43 - O Cometa"]
+            },
+            {
+                temporada: "TEMPORADA 7",
+                episodios: ["1 - Bonnie e Neddy", "2 - Verminhos", "3 - Cerejinha", "4 - Mamãe Disse", "6 - Estaca Parte 1: Marceline a Rainha Vampira", "7 - Estaca Parte 2: Tudo Permanece", "8 - Estaca Parte 3: Vampiros por aí", "9 - Estaca Parte 4: Os Olhos da Imperatriz", "10 - Estaca Parte 5: Posso Entrar", "11 - Estaca Parte 6: Levem sem Brincar", "12 - Estaca Parte 7: Xeque-Mate", "13 - Estaca Parte 8: A Nuvem Sombria", "14/15 - Quanto Mais Moe Dentro, Mais Conhecimento", "16 - Chuvas de Verão", "19 - Meninas de Olhos Vazios", "20 - Onda Ruim", "21 - Resgate do Rei", "23 - Mistura de Realidades", "24 - Salão de Egresso", "25 - Feitiço da Flauta", "26 - A Fina Linha Amarela"]
+            },
+            {
+                temporada: "TEMPORADA 8",
+                episodios: ["1 - Coroa Quebrada", "2 - Não Olhe", "3 - Além da Gruta", "5 - Eu Sou Uma Espada", "6 - Canelita", "7 - O Normal", "8 - Elemental", "10 - O Buraco Musical", "11 - Guerra de Cartas com Pai e Filha", "12 - Pré-Início", "13 - Re-Início", "14 - Duas Espadas", "15 - Nunca Causar Dano ou Mal", "16 - Rodas", "18 - O Cavalo e a Bola", "19 - Jujubinhas Poderosas", "20 - Ilhas Parte Um: O Convite", "21 - Ilhas Parte Dois: Whipple, O Dragão Feliz", "22 - Ilhas Parte Três: Ilhas Misteriosas", "23 - Ilhas Parte Quatro: Recursos Imaginários", "24 - Ilhas Parte Cinco: Esconde-Esconde", "25 - Ilhas Parte Seis: Min & Marty", "26 - Ilhas Parte Sete: Ajudantes", "27 - Ilhas Parte Oito: A Nuvem de Luz"]
+            },
+            {
+                temporada: "TEMPORADA 9",
+                episodios: ["1 - Orbe", "2 - Elementos Parte Um: Ganchos Celestes", "3 - Elementos Parte Dois: Sob Medida", "4 - Elementos Parte Três: Luz do Inverno", "5 - Elementos Parte Quatro: Nublado", "6 - Elementos Parte Cinco: Central da Gosma", "7 - Elementos Parte Seis: Coração de Herói", "8 - Elementos Parte Sete: Guerreiro Feliz", "9 - Elementos Parte Oito: Ganchos Celestes II", "10 - Abstrato", "11 - Papear", "12 - Fionna e Cake e Fionna", "13 - Sussurros", "14 - Três Baldes"]
+            },
+            {
+                temporada: "TEMPORADA 10",
+                episodios: ["1 - A Caçada Selvagem", "2 - BMO vendedor", "4 - Bonnibel Jujuba", "5 - Dezessete", "7 - Marcy & Hunson", "8 - A Primeira Investigação", "10 - Jake, Filho das Estrelas", "11 - Templo de Marte", "12 - Gumbaldia", "13/14/15/16 - Venha Comigo"]
+            }
+        ];
+
+        const appContent = document.getElementById('app-content');
+
+        function carregarDados() {
+            const dados = localStorage.getItem('hda_guia');
+            return dados ? JSON.parse(dados) : {};
+        }
+
+        function salvarDados(dados) {
+            localStorage.setItem('hda_guia', JSON.stringify(dados));
+            atualizarProgresso();
+        }
+
+        let db = carregarDados();
+        let totalEpisodios = 0;
+
+        guias.forEach((temp, tIndex) => {
+            const tempDiv = document.createElement('div');
+            tempDiv.className = 'temporada';
+            
+            const header = document.createElement('div');
+            header.className = 'temporada-header';
+            header.innerHTML = `<span>${temp.temporada}</span> <span id="count-temp-${tIndex}">0/${temp.episodios.length}</span>`;
+            
+            const lista = document.createElement('div');
+            lista.className = 'episodios-lista';
+
+            header.onclick = () => {
+                lista.style.display = lista.style.display === 'block' ? 'none' : 'block';
+            };
+
+            temp.episodios.forEach((ep, eIndex) => {
+                totalEpisodios++;
+                const epId = `t${tIndex}e${eIndex}`;
+                if (!db[epId]) {
+                    db[epId] = { assistido: false, nota: 0, favoritar: false, notas: "" };
+                }
+                const epData = db[epId];
+
+                const card = document.createElement('div');
+                card.className = 'episodio-card';
+
+                card.innerHTML = `
+                    <div class="episodio-titulo">
+                        <input type="checkbox" class="checkbox-custom" id="check-${epId}" ${epData.assistido ? 'checked' : ''}>
+                        <label for="check-${epId}">${ep}</label>
+                    </div>
+                    <div class="controles">
+                        <div class="rating-bmo" id="rating-${epId}">
+                            ${[1,2,3,4,5].map(n => `<img class="bmo-icon ${n <= epData.nota ? 'ativo' : ''}" data-nota="${n}">`).join('')}
+                        </div>
+                        <img class="fav-marceline ${epData.favoritar ? 'ativo' : ''}" id="fav-${epId}" title="Favoritar">
+                    </div>
+                    <textarea class="anotacoes" id="note-${epId}" placeholder="Comentários de Ooo">${epData.notas}</textarea>
+                `;
+                lista.appendChild(card);
+            });
+
+            tempDiv.appendChild(header);
+            tempDiv.appendChild(lista);
+            appContent.appendChild(tempDiv);
+        });
+
+        document.querySelectorAll('.checkbox-custom').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const epId = e.target.id.split('-')[1];
+                db[epId].assistido = e.target.checked;
+                salvarDados(db);
+            });
+        });
+
+        document.querySelectorAll('.bmo-icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                const ratingDiv = e.target.parentElement;
+                const epId = ratingDiv.id.split('-')[1];
+                const notaClicada = parseInt(e.target.getAttribute('data-nota'));
+                
+                db[epId].nota = db[epId].nota === notaClicada ? 0 : notaClicada; 
+                
+                Array.from(ratingDiv.children).forEach((bmo, index) => {
+                    if(index < db[epId].nota) bmo.classList.add('ativo');
+                    else bmo.classList.remove('ativo');
+                });
+                salvarDados(db);
+            });
+        });
+
+        document.querySelectorAll('.fav-marceline').forEach(fav => {
+            fav.addEventListener('click', (e) => {
+                const epId = e.target.id.split('-')[1];
+                db[epId].favoritar = !db[epId].favoritar;
+                if(db[epId].favoritar) e.target.classList.add('ativo');
+                else e.target.classList.remove('ativo');
+                salvarDados(db);
+            });
+        });
+
+        document.querySelectorAll('.anotacoes').forEach(txt => {
+            txt.addEventListener('input', (e) => {
+                const epId = e.target.id.split('-')[1];
+                db[epId].notas = e.target.value;
+                salvarDados(db);
+            });
+        });
+
+        function atualizarProgresso() {
+            let assistidos = 0;
+            let assistidosPorTemporada = {};
+
+            // Conta os episódios assistidos no geral e por temporada
+            for(let key in db) {
+                if(db[key].assistido) {
+                    assistidos++;
+                    // Pega o número da temporada através da chave do episódio (ex: 't0e1' -> 0)
+                    let match = key.match(/t(\d+)e/);
+                    if(match) {
+                        let tIndex = match[1];
+                        if(!assistidosPorTemporada[tIndex]) assistidosPorTemporada[tIndex] = 0;
+                        assistidosPorTemporada[tIndex]++;
+                    }
+                }
+            }
+            
+            // Atualiza a porcentagem geral
+            const porcentagem = Math.round((assistidos / totalEpisodios) * 100);
+            document.getElementById('progresso-texto').innerText = porcentagem + '%';
+
+            // Atualiza os contadores de cada temporada na interface
+            guias.forEach((temp, tIndex) => {
+                let assistidosNestaTemp = assistidosPorTemporada[tIndex] || 0;
+                let counterElement = document.getElementById(`count-temp-${tIndex}`);
+                if(counterElement) {
+                    counterElement.innerText = `${assistidosNestaTemp}/${temp.episodios.length}`;
+                }
+            });
+        }
+
+        // Chama a função logo ao carregar para atualizar os números com os dados salvos
+        atualizarProgresso();
+    </script>
+</body>
+</html>
